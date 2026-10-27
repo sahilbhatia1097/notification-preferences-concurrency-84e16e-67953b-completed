@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: notif_prefs_db
+    environment:
+      POSTGRES_USER: notif_user
+      POSTGRES_PASSWORD: notif_pass
+      POSTGRES_DB: notif_prefs
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notif_user -d notif_prefs"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: notif_prefs_app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql://notif_user:notif_pass@db:5432/notif_prefs"
+      JWT_SECRET: "super-secret-key-for-testing"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

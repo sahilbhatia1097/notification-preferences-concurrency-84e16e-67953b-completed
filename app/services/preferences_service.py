@@ -11,6 +11,7 @@ def fetch_user_preferences(user_id: UUID) -> Optional[NotificationPreferences]:
 def apply_preference_updates(
     user_id: UUID,
     request: PreferencesUpdateRequest,
+    expected_version: int,
 ) -> Optional[NotificationPreferences]:
     updates = request.model_dump(exclude_none=True)
-    return update_preferences(user_id, updates)
+    return update_preferences(user_id, updates, expected_version)
